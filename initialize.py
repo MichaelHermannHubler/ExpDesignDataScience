@@ -6,6 +6,7 @@ from sklearn import datasets
 import os
 import nltk
 from nltk.corpus import stopwords
+import pickle
 
 # run in normal python shell once:
 #>>> import nltk
@@ -50,6 +51,9 @@ def get_subjectivity_dataset():
 
 def get_polarity_dataset():
     # Sentence polarity dataset
+
+    if os.path.isfile('./data/variable_storage/polarity.pkl'):
+        return pickle.load(open('./data/variable_storage/polarity.pkl', 'rb'))
 
     neg_directory = './data/Movie_Review/Sentence_Polarity/neg/'
     pos_directory = './data/Movie_Review/Sentence_Polarity/pos/'
