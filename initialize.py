@@ -91,3 +91,51 @@ def get_polarity_dataset():
     polarity_complete['tokens'] = polarity_tokenized
 
     return polarity_complete
+
+def get_TREC45_dataset():
+    trec_file = './data/TREC45/04.testset'
+
+    trec = []
+    trec_lines = []
+
+    #load all text
+    with open(trec_file, 'r') as f:     
+        line = f.readline()
+        while line:
+            if line != '':
+                if line.startswith('<'):
+                    trec_lines.append(line.strip())
+                else:
+                    trec_lines[-1] = trec_lines[-1] + ' ' + line.strip()
+
+            line = f.readline()
+    
+    # transform text into dataframe
+    trec_elem = [None] * 4
+    for i in range(len(trec_lines)):
+        if trec_lines[i].startswith('<top>'):
+            trec_elem = [None] * 4
+        elif trec_lines[i].startswith('</top>'):
+            trec.append(trec_elem)
+        elif trec_lines[i].startswith('<num>'):
+            trec_elem[0] = trec_lines[i][5:]
+        elif trec_lines[i].startswith('<title>'):
+            trec_elem[1] = trec_lines[i][7:]
+        elif trec_lines[i].startswith('<desc>'):
+            trec_elem[2] = trec_lines[i][6:]
+        elif trec_lines[i].startswith('<narr>'):
+            trec_elem[3] = trec_lines[i][6:]
+
+    trec = pd.DataFrame(trec, columns=['Number', 'Title', 'Description', 'Narrative'])
+
+    # remove identifying Text from content
+    trec['Number'] = trec['Number'].map(lambda x: x.lstrip('Number: '))
+    trec['Description'] = trec['Description'].map(lambda x: x.lstrip('Description: '))
+    trec['Narrative'] = trec['Narrative'].map(lambda x: x.lstrip('Narrative: '))
+
+    # tokenize
+    trec['Title_tokenized'] = [tokenize_text(text) for text in trec['Title']]   # Tokenized data
+    trec['Description_tokenized'] = [tokenize_text(text) for text in trec['Description']]   # Tokenized data
+    trec['Narrative_tokenized'] = [tokenize_text(text) for text in trec['Narrative']]   # Tokenized data
+
+    return trec
